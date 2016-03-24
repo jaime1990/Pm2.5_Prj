@@ -1,6 +1,5 @@
 package com.goertek.pmdemo.activity;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
@@ -23,7 +22,7 @@ import java.net.URLEncoder;
  * @email : appeal1990@hotmail.com
  * @since : 16-3-17
  */
-public class LoadingActivity extends Activity {
+public class LoadingActivity extends BaseActivity {
 
     private static final String TAG = LoadingActivity.class.getSimpleName();
     private DownloadTask mTask = null;
@@ -34,6 +33,7 @@ public class LoadingActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        allActivities.add(this);
         setContentView(R.layout.layout_loading);
         imgLoading = (ImageView) findViewById(R.id.img_loading);
         mAnim = (AnimationDrawable) imgLoading.getBackground();
@@ -49,8 +49,8 @@ public class LoadingActivity extends Activity {
     private void excuteTask() {
         try {
             param = "key=" + URLEncoder.encode(Constants.API_KEY, "UTF-8");
-            param +="&city=" + URLEncoder.encode("北京", "UTF-8"); //默认获取北京市的空气信息
-        }catch (Exception e){
+            param += "&city=" + URLEncoder.encode("北京", "UTF-8"); //默认获取北京市的空气信息
+        } catch (Exception e) {
             e.printStackTrace();
         }
         mTask = new DownloadTask(this);
@@ -65,9 +65,11 @@ public class LoadingActivity extends Activity {
                 startActivity(intent);
                 LoadingActivity.this.finish();
             }
+
             @Override
             public void onDataFailed() {
                 Toast.makeText(LoadingActivity.this, "数据加载失败", Toast.LENGTH_SHORT).show();
+                logout();
             }
         });
         mTask.execute(param);

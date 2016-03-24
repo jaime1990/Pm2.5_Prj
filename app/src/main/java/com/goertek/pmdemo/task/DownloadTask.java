@@ -1,14 +1,13 @@
 package com.goertek.pmdemo.task;
 
-import android.app.Activity;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.util.Log;
 
 import com.goertek.bean.CityAir;
-import com.goertek.pmdemo.activity.LoadingActivity;
 import com.goertek.pmdemo.utils.Constants;
+import com.goertek.pmdemo.utils.FileUtils;
 import com.goertek.pmdemo.utils.HttpUtils;
 import com.goertek.pmdemo.utils.JsonUtils;
 import com.goertek.pmdemo.utils.WifiUtils;
@@ -20,10 +19,10 @@ import com.goertek.pmdemo.utils.WifiUtils;
  * @email : appeal1990@hotmail.com
  * @since : 16-3-18
  */
-public class DownloadTask extends AsyncTask<String, Integer, CityAir> {
+public class DownloadTask extends AsyncTask<String, Integer, String> {
 
     private static final String TAG = DownloadTask.class.getSimpleName();
-    private LoadingActivity mActivity;
+    private Context mContext;
 
     private WifiUtils wUtils;
     private WifiManager mWifiManager;
@@ -31,9 +30,9 @@ public class DownloadTask extends AsyncTask<String, Integer, CityAir> {
     private boolean isConnect = false;
     private OnDataFinishedListener dataListener;
 
-    public DownloadTask(Activity activity){
-        this.mActivity = (LoadingActivity) activity;
-        mWifiManager = (WifiManager) mActivity.getSystemService(Context.WIFI_SERVICE);
+    public DownloadTask(Context ctx) {
+        this.mContext = ctx;
+        mWifiManager = (WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
         wUtils = new WifiUtils(mWifiManager);
     }
 
@@ -49,24 +48,26 @@ public class DownloadTask extends AsyncTask<String, Integer, CityAir> {
     }
 
     @Override
-    protected CityAir doInBackground(String... params) {
+    protected String doInBackground(String... params) {
         Log.w(TAG, "doInBackground....  ");
         connectWifi();
-        if(isConnect && params[0] != null){
-            String result =  HttpUtils.httpPostRequest(Constants.AQL_URL, params[0]);
-            CityAir cityAir = JsonUtils.json2Entity(result);
-            return cityAir;
+        if (isConnect && params != null && params.length > 0) {   //从网上获取pm数据
+            String result = HttpUtils.httpPostRequest(Constants.AQL_URL, params[0]);
+            FileUtils.writeFileInApp(mContext, Constants.FILE_PM, result);
+            return result;
+        } else { //否则解析文件中的数据
+            return FileUtils.readFileFromApp(mContext, Constants.FILE_PM);
         }
-        return null;
     }
 
 
     @Override
-    protected void onPostExecute(CityAir cityAir) {
-        Log.w(TAG, " onPostExecute-->   json = " + cityAir);
-        if(cityAir != null && cityAir.getId() != 0){
+    protected void onPostExecute(String result) {
+        Log.w(TAG, " onPostExecute-->   json = " + result);
+        CityAir cityAir = JsonUtils.json2Entity(result);
+        if (cityAir != null && cityAir.getRanking() != 0) {
             dataListener.onDataSuccessed(cityAir);
-        }else{
+        } else {
             dataListener.onDataFailed();
         }
     }
@@ -82,7 +83,7 @@ public class DownloadTask extends AsyncTask<String, Integer, CityAir> {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        if (1 == wUtils.isNetworkAvailable(mActivity)) {
+        if (1 == wUtils.isNetworkAvailable(mContext)) {
             isConnect = true;
         } else {
             wUtils.connectNet(Constants.wifi_SSID, Constants.wifi_PWD, WifiUtils.WifiCipherType.WIFICIPHER_WPA);
@@ -92,7 +93,7 @@ public class DownloadTask extends AsyncTask<String, Integer, CityAir> {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                if (1 == wUtils.isNetworkAvailable(mActivity)) {
+                if (1 == wUtils.isNetworkAvailable(mContext)) {
                     isConnect = true;
                     break;
                 }
@@ -103,7 +104,7 @@ public class DownloadTask extends AsyncTask<String, Integer, CityAir> {
     private void ConnectWiFi() {
         connect = wUtils.connectNet(Constants.wifi_SSID, Constants.wifi_PWD, WifiUtils.WifiCipherType.WIFICIPHER_WPA);
         Log.e(TAG, "connect state : " + connect);
-        if (1 == wUtils.isNetworkAvailable(mActivity) && connect == true) {
+        if (1 == wUtils.isNetworkAvailable(mContext) && connect == true) {
             isConnect = connect;
         }
         Log.i(TAG, "isconnect : " + isConnect);
@@ -114,6 +115,7 @@ public class DownloadTask extends AsyncTask<String, Integer, CityAir> {
      */
     public interface OnDataFinishedListener {
         void onDataSuccessed(Object data);
+
         void onDataFailed();
     }
 }

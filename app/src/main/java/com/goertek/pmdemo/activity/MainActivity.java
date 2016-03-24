@@ -21,6 +21,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        allActivities.add(this);
         setContentView(R.layout.activity_main);
         handler  = new Handler();
         cityAir = (CityAir) getIntent().getSerializableExtra("cityair");
