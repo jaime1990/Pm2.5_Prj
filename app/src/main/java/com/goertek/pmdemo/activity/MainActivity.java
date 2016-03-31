@@ -3,6 +3,7 @@ package com.goertek.pmdemo.activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -13,6 +14,7 @@ import com.goertek.pmdemo.utils.Constants;
 public class MainActivity extends BaseActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    public static final String EXTRA_PARAM = "CITY_AIR";
     private RelativeLayout pmLayout;
     private TextView txtProvince, txtPm2_5, txtPlevel, txtUpdatetime;
     private CityAir cityAir;
@@ -24,7 +26,7 @@ public class MainActivity extends BaseActivity {
         allActivities.add(this);
         setContentView(R.layout.activity_main);
         handler  = new Handler();
-        cityAir = (CityAir) getIntent().getSerializableExtra("cityair");
+        cityAir = (CityAir) getIntent().getSerializableExtra(EXTRA_PARAM);
         initViews();
     }
 
@@ -47,6 +49,12 @@ public class MainActivity extends BaseActivity {
             txtPlevel.setText("AQ："+cityAir.getQuality());
             txtUpdatetime.setText(cityAir.getUpdateTime());
         }
+        txtPm2_5.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
     }
 
     private void setPmBackground(String quality) {
@@ -97,10 +105,6 @@ public class MainActivity extends BaseActivity {
             pmLayout.setBackgroundResource(resid[id]);
             handler.postDelayed(this, 3000);
         }
-    }
-
-    private void getCityAirDao(){
-
     }
 
     @Override

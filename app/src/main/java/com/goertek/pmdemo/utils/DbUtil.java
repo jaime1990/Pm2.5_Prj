@@ -11,7 +11,7 @@ import com.goertek.pmdemo.application.BaseApplication;
 import java.util.List;
 
 /**
- * Description:
+ * Description: db utils needed to operate database
  *
  * @author : jaime
  * @email : appeal1990@hotmail.com

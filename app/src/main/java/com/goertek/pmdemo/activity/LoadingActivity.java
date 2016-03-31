@@ -60,7 +60,7 @@ public class LoadingActivity extends BaseActivity {
                 Log.w(TAG, "onDataSuccessed  data(pm2.5) = " + ((CityAir) data).getPm2_5());
                 CityAir cityAir = (CityAir) data;
                 Intent intent = new Intent(LoadingActivity.this, MainActivity.class);
-                intent.putExtra("cityair", cityAir);
+                intent.putExtra(MainActivity.EXTRA_PARAM, cityAir);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 LoadingActivity.this.finish();
